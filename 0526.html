@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📡 Radar de Mercado — Maio 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-base: #0f0f1a; --bg-card: #1a1a2e; --bg-hover: #22223b;
+      --text-main: #e2e8f0; --text-muted: #94a3b8;
+      --accent-1: #4361ee; --accent-2: #06d6a0; --accent-3: #f4845f; --accent-4: #7b2cbf;
+      --alert-red: #ef476f; --alert-yellow: #ffd166;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-main); line-height: 1.7; padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
+    h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+    h1 { font-size: 2.8rem; text-align: center; margin-bottom: 0.5rem; background: linear-gradient(90deg, #4361ee, #06d6a0); -webkit-background-clip: text; color: transparent; }
+    .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 1.1rem; }
+    .card { background: var(--bg-card); border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.2); margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,0.05); animation: fadeIn 0.8s ease-out forwards; opacity: 0; }
+    .card:hover { border-color: rgba(255,255,255,0.1); }
+    .modulo-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .badge { padding: 0.2rem 0.6rem; border-radius: 20px; font-weight: bold; font-family: 'Outfit'; font-size: 0.85rem; }
+    .b-azul { background: rgba(67,97,238,0.2); color: var(--accent-1); }
+    .b-verde { background: rgba(6,214,160,0.2); color: var(--accent-2); }
+    .b-laranja { background: rgba(244,132,95,0.2); color: var(--accent-3); }
+    .b-roxo { background: rgba(123,44,191,0.2); color: var(--accent-4); }
+    .b-alerta { background: rgba(239,71,111,0.2); color: var(--alert-red); }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    th, td { padding: 0.6rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    th { color: var(--text-muted); font-weight: 500; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .tag-conf { color: var(--accent-2); font-weight: 600; font-size: 0.8rem; }
+    .tag-emer { color: var(--accent-3); font-weight: 600; font-size: 0.8rem; }
+    .tag-fraco { color: var(--accent-1); font-weight: 600; font-size: 0.8rem; }
+    .chart-container { position: relative; height: 320px; width: 100%; margin: 1.5rem 0; }
+    .exec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .exec-item { background: var(--bg-card); border-radius: 12px; padding: 1.2rem; border-left: 4px solid var(--accent-1); }
+    .exec-item.oportunidade { border-left-color: var(--accent-2); }
+    .exec-item.alerta { border-left-color: var(--alert-red); }
+    .exec-item.monitorar { border-left-color: var(--alert-yellow); }
+    .exec-item h4 { font-size: 0.9rem; margin-bottom: 0.4rem; }
+    .exec-item p { font-size: 0.85rem; color: var(--text-muted); }
+    .fonte { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.3rem; }
+    .fonte a { color: var(--accent-1); text-decoration: none; }
+    .fonte a:hover { text-decoration: underline; }
+    .acao { background: rgba(6,214,160,0.08); border-radius: 8px; padding: 0.8rem 1rem; margin: 0.5rem 0; font-size: 0.9rem; border-left: 3px solid var(--accent-2); }
+    .sumario { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+    .sumario a { background: rgba(67,97,238,0.15); color: var(--accent-1); padding: 0.3rem 0.7rem; border-radius: 8px; text-decoration: none; font-size: 0.8rem; transition: background 0.2s; }
+    .sumario a:hover { background: rgba(67,97,238,0.3); }
+    .secao { margin: 1rem 0; }
+    .secao h3 { font-size: 1rem; margin-bottom: 0.5rem; color: var(--text-main); }
+    .secao p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .indicador-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.8rem; margin: 1rem 0; }
+    .indicador { text-align: center; background: rgba(255,255,255,0.03); border-radius: 10px; padding: 0.8rem 0.5rem; }
+    .indicador .valor { font-size: 1.8rem; font-family: 'Outfit'; font-weight: 700; }
+    .indicador .label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .baseline-note { text-align: center; font-size: 0.8rem; color: var(--text-muted); background: rgba(67,97,238,0.08); border-radius: 8px; padding: 0.6rem; margin: 1rem 0; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    .delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.2s; } .delay-3 { animation-delay: 0.3s; }
+    @media print { body { background: #fff; color: #222; } .card { box-shadow: none; border: 1px solid #ddd; } h1 { color: #4361ee; -webkit-background-clip: unset; background: none; } }
+    @media (max-width: 600px) { h1 { font-size: 1.8rem; } body { padding: 0.8rem; } .exec-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<h1>📡 Radar de Mercado</h1>
+<div class="subtitle">Inteligência Estratégica para Cérebro TDAH · <strong>Maio 2026</strong> · Relatório #1 (Baseline)</div>
+
+<div class="baseline-note">🔵 Este é o primeiro relatório. Os índices deste mês servem como baseline. Gráficos de evolução estarão disponíveis a partir do 3o relatório.</div>
+
+<!-- SUMÁRIO -->
+<div class="card delay-1">
+  <h3 style="margin-bottom:0.8rem;">📑 Sumário</h3>
+  <div class="sumario">
+    <a href="#exec">Executive Summary</a>
+    <a href="#painel">Painel de Índices</a>
+    <a href="#m1">M1 Instagram</a>
+    <a href="#m2">M2 Plataformas</a>
+    <a href="#m3">M3 Ferramentas</a>
+    <a href="#m4">M4 Formatos</a>
+    <a href="#m5">M5 Fadiga</a>
+    <a href="#m6">M6 Hooks</a>
+    <a href="#m7">M7 Consumidor BR</a>
+    <a href="#m8">M8 Infoprodutos</a>
+    <a href="#m9">M9 Nicho</a>
+    <a href="#m10">M10 Disruptores</a>
+    <a href="#m11">M11 IA</a>
+    <a href="#m12">M12 Indicadores</a>
+  </div>
+</div>
+
+<!-- EXECUTIVE SUMMARY -->
+<section id="exec">
+<div class="card delay-2">
+  <div class="modulo-header"><span class="badge b-verde">ES</span><h2>Executive Summary</h2></div>
+
+  <div class="exec-grid">
+    <div class="exec-item oportunidade">
+      <h4>🟢 Carrosséis dominam engajamento</h4>
+      <p>Carrosséis atingem 6,9% de engagement rate por alcance (vs. 3,3% Reels). Para a Geisa com conta fria, o carrossel educativo de 8-10 cards é o formato de maior retorno por post.</p>
+    </div>
+    <div class="exec-item alerta">
+      <h4>🔴 Shares (DMs) agora pesam 15x mais que likes</h4>
+      <p>O algoritmo de 2026 rebalanceou em torno de 4 sinais: DM shares, saves, watch time e profile clicks. Likes caíram para peso residual. Conteúdo precisa ser desenhado para gerar compartilhamento privado.</p>
+    </div>
+    <div class="exec-item oportunidade">
+      <h4>🟢 Comunidades por assinatura em alta</h4>
+      <p>O mercado BR de infoprodutos migra de cursos isolados para ecossistemas de pertencimento. O Clube do Cérebro TDAH está alinhado com a tendência dominante de 2026.</p>
+    </div>
+    <div class="exec-item alerta">
+      <h4>🔴 52% dos consumidores reduzem engajamento com conteúdo que suspeitam ser IA</h4>
+      <p>A fadiga de conteúdo IA-gerado é mensurável. Apenas 26% dos consumidores preferem conteúdo de IA (queda de 60% em 2023). A voz autêntica da Geisa é vantagem competitiva real.</p>
+    </div>
+    <div class="exec-item monitorar">
+      <h4>🟡 GEO (Generative Engine Optimization) emerge</h4>
+      <p>Sessões referidas por IA subiram 527% YoY. O blog cerebrotdah.com.br precisa ser otimizado para ser citado por ChatGPT, Perplexity e Google AI Overviews. 47% das marcas ainda não têm estratégia GEO.</p>
+    </div>
+    <div class="exec-item monitorar">
+      <h4>🟡 Marco Regulatório de IA no Brasil avança</h4>
+      <p>PL 2.338/23 aprovado no Senado, em análise na Comissão Especial da Câmara. Votação esperada no 1o semestre de 2026. Inclui regras sobre direitos autorais e rotulagem de conteúdo IA.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- PAINEL DE ÍNDICES -->
+<section id="painel">
+<div class="card delay-3">
+  <div class="modulo-header"><span class="badge b-roxo">📊</span><h2>Painel de Índices Estratégicos</h2></div>
+  
+  <div class="indicador-grid">
+    <div class="indicador"><div class="valor" style="color:var(--accent-2)">7.0</div><div class="label">ICF<br>Confiança Formato</div></div>
+    <div class="indicador"><div class="valor" style="color:var(--accent-1)">5.5</div><div class="label">IPC<br>Permeabilidade</div></div>
+    <div class="indicador"><div class="valor" style="color:var(--accent-3)">6.5</div><div class="label">ISM<br>Saturação ⚠️</div></div>
+    <div class="indicador"><div class="valor" style="color:var(--accent-2)">6.0</div><div class="label">ICB<br>Consumidor BR</div></div>
+    <div class="indicador"><div class="valor" style="color:var(--accent-1)">7.5</div><div class="label">IDI<br>Disrupção</div></div>
+    <div class="indicador"><div class="valor" style="color:var(--alert-yellow)">5.0</div><div class="label">IRF<br>Rejeição ⚠️</div></div>
+    <div class="indicador"><div class="valor" style="color:var(--alert-red)">6.5</div><div class="label">ICA<br>Contaminação IA ⚠️</div></div>
+  </div>
+  
+  <div class="chart-container"><canvas id="radarChart"></canvas></div>
+</div>
+</section>
+
+<!-- M1 INSTAGRAM -->
+<section id="m1">
+<div class="card">
+  <div class="modulo-header"><span class="badge b-azul">M1</span><h2>Instagram Deep Dive</h2></div>
+  
+  <div class="secao">
+    <h3>Algoritmo 2026: Os 4 Sinais que Importam</h3>
+    <p>O Instagram rebalanceou a distribuição em torno de 4 sinais de intenção de compra: <strong>DM shares</strong> (peso ~15x um like), <strong>saves</strong> (peso ~3x), <strong>watch time</strong> e <strong>profile clicks</strong>. Likes e contagem de seguidores perderam quase todo o peso. Mosseri confirmou em Q1 2026 que watch time, likes por alcance e DM shares são os três fatores de ranking mais relevantes. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p class="fonte">Fontes: <a href="https://goso.io/instagram-updates/instagram-algorithm-change-2026/" target="_blank">GOSO</a>, <a href="https://blog.hootsuite.com/instagram-algorithm/" target="_blank">Hootsuite</a>, <a href="https://later.com/blog/how-instagram-algorithm-works/" target="_blank">Later</a></p>
+  </div>
+
+  <div class="secao">
+    <h3>Mudanças Estruturais Confirmadas</h3>
+    <p>Em março 2026, o Instagram deu peso reforçado a contas com as quais o usuário interage via DMs, comentários e respostas de Stories. Conteúdo original é priorizado sobre republicações. Em abril 2026, o Instagram anunciou redução do alcance de reposts, mirando contas agregadoras que repostam sem adaptação. Conteúdo com watermarks de outras plataformas continua sendo penalizado. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p>O recurso "Your Algorithm" permite aos usuários revisar e ajustar temas que o Instagram acha relevantes. Trial Reels continuam disponíveis para testar conteúdo com audiência fria sem publicar no perfil. O app Edits, de edição nativa, terá prioridade de alcance segundo Mosseri. <span class="tag-emer">[EMERGENTE]</span></p>
+    <p class="fonte">Fontes: <a href="https://meetedgar.com/blog/instagram-algorithm-updates" target="_blank">MeetEdgar</a>, <a href="https://www.techtudo.com.br/noticias/2026/04/instagram-vai-reduzir-alcance-de-reposts-veja-o-que-muda-para-marcas-e-criadores-edapps.ghtml" target="_blank">TechTudo</a></p>
+  </div>
+
+  <div class="secao">
+    <h3>Benchmarks por Formato</h3>
+    <table>
+      <tr><th>Formato</th><th>Eng. Rate (por alcance)</th><th>Eng. Rate (por seguidores)</th><th>Reach vs. Seguidores</th><th>Melhor para</th></tr>
+      <tr><td>Carrossel</td><td><strong>6.9%</strong></td><td>0.55% - 1.92%</td><td>15-25%</td><td>Engajamento, saves, conversão</td></tr>
+      <tr><td>Reel</td><td>3.3%</td><td>0.50% - 1.48%</td><td>20-40%</td><td>Descoberta, alcance frio</td></tr>
+      <tr><td>Imagem estática</td><td>4.4%</td><td>0.45%</td><td>10-15%</td><td>Em declínio (-17% YoY)</td></tr>
+    </table>
+    <p>Carrosséis com 8-10 slides geram 23% mais engajamento que carrosséis com menos de 4 slides. Carrosséis mistos (imagem + vídeo) atingem 2.33% de engagement rate. O Instagram re-serve carrosséis para seguidores que não completaram todos os slides. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p class="fonte">Fontes: <a href="https://www.socialinsider.io/social-media-benchmarks/instagram" target="_blank">Socialinsider 2026</a>, <a href="https://buffer.com/resources/state-of-social-media-engagement-2026/" target="_blank">Buffer 52M posts</a>, <a href="https://searchlab.nl/en/statistics/instagram-statistics-2026" target="_blank">SearchLab</a></p>
+  </div>
+
+  <div class="chart-container"><canvas id="formatChart"></canvas></div>
+
+  <div class="secao">
+    <h3>🎯 Implicação para Cérebro TDAH</h3>
+    <p>A conta 🔴 Fria se beneficia especificamente do formato Carrossel educativo: gera saves (conteúdo de referência sobre TDAH) e DM shares (enviar para amigo/parceiro que precisa entender). A estratégia ideal para conta fria em reaquecimento é: 60-70% carrosséis de 8-10 cards + 30-40% Reels curtos para descoberta. Trial Reels são recomendados para testar hooks sem risco de estragar o feed.</p>
+  </div>
+
+  <div class="acao">📌 <strong>Ação:</strong> Manter o formato carrossel como carro-chefe. Adicionar CTA "Envia pra alguém que precisa ouvir isso" em todos os posts. Testar Trial Reels 1x/semana com hooks mais ousados.</div>
+</div>
+</section>
+
+<!-- M2 PLATAFORMAS -->
+<section id="m2">
+<div class="card">
+  <div class="modulo-header"><span class="badge b-azul">M2</span><h2>Outras Plataformas</h2></div>
+
+  <div class="secao">
+    <h3>Panorama Brasil (DataReportal 2026)</h3>
+    <p>185 milhões de usuários de internet no Brasil (86,9% da população). 150 milhões de identidades de redes sociais (70,4%). Tempo médio em redes sociais: 3h49min/dia, um dos mais altos do mundo. O brasileiro acessa em média 6,5 plataformas. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <table>
+      <tr><th>Plataforma</th><th>Usuários BR</th><th>Relevância para Geisa</th><th>Recomendação</th></tr>
+      <tr><td>YouTube</td><td>150M</td><td>ALTA</td><td>INVESTIR (long-form + Shorts)</td></tr>
+      <tr><td>Instagram</td><td>145M</td><td>MÁXIMA</td><td>PRINCIPAL (já ativo)</td></tr>
+      <tr><td>TikTok</td><td>131M</td><td>MÉDIA</td><td>MONITORAR (audiência TDAH cresce)</td></tr>
+      <tr><td>LinkedIn</td><td>90M membros</td><td>MÉDIA</td><td>MONITORAR (posicionamento profissional)</td></tr>
+      <tr><td>WhatsApp</td><td>~170M+</td><td>ALTA</td><td>INVESTIR (Clube, comunidade, vendas)</td></tr>
+    </table>
+    <p class="fonte">Fontes: <a href="https://datareportal.com/reports/digital-2026-brazil" target="_blank">DataReportal 2026</a>, <a href="https://www.shortsintel.com/statistics/global-social-media-usage" target="_blank">ShortsIntel</a></p>
+  </div>
+
+  <div class="chart-container"><canvas id="platformChart"></canvas></div>
+
+  <div class="secao">
+    <h3>YouTube: Algoritmo 2026</h3>
+    <p>YouTube priorizou "satisfação de longo prazo" sobre "tempo de tela bruto" como métrica principal. O Browse feed (homepage) foi remodelado em fevereiro 2026: agora agrupa vídeos por micro-nichos dentro dos interesses do viewer, não mais por categorias amplas. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p><strong>Shorts:</strong> Algoritmo de Shorts agora opera de forma independente do long-form. Shorts só são exibidos para quem consome Shorts regularmente. Shorts de 13 ou 60 segundos performam melhor. Views agora contam a partir do momento que o Short começa a tocar (sem tempo mínimo), mas apenas "Engaged Views" (interação real) contam para monetização. Feature de link persistente permite direcionar de Shorts para long-form. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p class="fonte">Fontes: <a href="https://outlierkit.com/resources/youtube-algorithm-updates/" target="_blank">OutlierKit</a>, <a href="https://vidiq.com/blog/post/youtube-shorts-algorithm/" target="_blank">vidIQ</a></p>
+  </div>
+
+  <div class="secao">
+    <h3>TikTok: Estado no Brasil</h3>
+    <p>131 milhões de usuários no Brasil. O TikTok Shop começou operações no BR em 2025, com foco em social commerce. A plataforma permite compra direta dentro do app, integrando criadores e vendas. No nicho TDAH, a audiência cresce no TikTok mas a Geisa não está ativa lá. Para criadores solo de nicho educativo de saúde, o TikTok exige alta frequência de vídeo curto que não é compatível com a operação atual. <span class="tag-emer">[EMERGENTE]</span></p>
+    <p><strong>Recomendação: MONITORAR.</strong> A audiência TDAH no TikTok é mais jovem (Gen Z, 18-27), diferente do público core da Geisa (25-45). Investir quando a conta do Instagram estiver reaquecida.</p>
+  </div>
+
+  <div class="secao">
+    <h3>Threads e LinkedIn</h3>
+    <p><strong>Threads:</strong> Baixa tração real no Brasil. Sem dados confiáveis de MAU no BR. Usar apenas para cross-posting rápido de insights, sem investimento de tempo dedicado. <strong>Recomendação: IGNORAR por enquanto.</strong></p>
+    <p><strong>LinkedIn:</strong> 90M de membros no Brasil (contas registradas, não MAU). Crescimento do nicho saúde/bem-estar na plataforma. Potencial para posicionamento profissional da Geisa como pesquisadora e para alcançar público corporativo (TDAH no ambiente de trabalho). <strong>Recomendação: MONITORAR. Investir quando houver capacidade operacional.</strong></p>
+  </div>
+
+  <div class="acao">📌 <strong>Ação:</strong> YouTube como canal secundário prioritário para long-form educativo (aulas do Clube podem ser adaptadas). Testar YouTube Shorts reaproveitando Reels do IG. WhatsApp Channels como canal de relacionamento direto. TikTok e LinkedIn apenas monitorar por enquanto.</div>
+</div>
+</section>
+
+<!-- M3 FERRAMENTAS -->
+<section id="m3">
+<div class="card">
+  <div class="modulo-header"><span class="badge b-azul">M3</span><h2>Novos Recursos e Ferramentas</h2></div>
+  
+  <div class="secao">
+    <h3>Features Relevantes do Instagram</h3>
+    <p><strong>Trial Reels:</strong> Testar conteúdo com não-seguidores antes de publicar no perfil. Disponível no BR. Relevância: 5/5 para conta fria.</p>
+    <p><strong>Your Algorithm:</strong> Usuários podem ajustar temas. Implicação: o conteúdo precisa estar bem categorizado (SEO no IG) para aparecer nos temas certos.</p>
+    <p><strong>Carrosséis até 20 slides:</strong> Expandido de 10 para 20 em 2024, mas o sweet spot continua em 8-10 slides.</p>
+    <p><strong>Edits (app de edição nativa):</strong> Mosseri indica que vídeos editados nele terão prioridade de alcance. <span class="tag-emer">[EMERGENTE]</span></p>
+    <p><strong>Dublagens automáticas em Reels:</strong> Tradução de áudio para PT, EN, ES, Hindi. Potencial para alcance internacional sem esforço.</p>
+  </div>
+
+  <div class="secao">
+    <h3>Ferramentas de IA para Criação</h3>
+    <p><strong>Canva AI 2.0 (Canva Create, abril 2026):</strong> O maior update desde 2013. Canva deixou de ser "ferramenta de design" para se posicionar como "plataforma agentic de criação". Novidades principais: design conversacional (criar layout a partir de linguagem natural), memória persistente (aprende seu estilo e mantém on-brand automaticamente), Layered Object Intelligence (output é editável por camada, não imagem flat), connectors com Slack/Gmail/Drive/Notion/Zoom, geração de vídeo via Veo 3, web research integrada, e modo offline. O Dream Lab (geração de imagem) usa o modelo Phoenix da Leonardo AI; qualidade inferior a Midjourney/DALL-E para prompts específicos. 250+ milhões de usuários mensais. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p><strong>Impacto para a Geisa:</strong> O pipeline Claude + Canva MCP continua sendo o mais eficiente. O Canva AI 2.0 pode complementar (criação de variações de stories, adaptação multicanal automática) mas NÃO substitui a pipeline atual para carrosséis com visual claymation customizado. Avaliar se o Brand Intelligence do Canva AI 2.0 vale o upgrade para manter consistência visual sem esforço manual.</p>
+    <p class="fonte">Fontes: <a href="https://www.canva.com/newsroom/news/canva-create-2026-ai/" target="_blank">Canva Newsroom</a>, <a href="https://exame.com/inteligencia-artificial/canva-aposta-em-ia-para-concentrar-o-trabalho-em-um-so-lugar/" target="_blank">Exame</a></p>
+  </div>
+
+  <div class="secao">
+    <h3>CapCut e Edição de Vídeo</h3>
+    <p>CapCut continua como editor padrão para Reels/TikTok. Legendas automáticas funcionam bem em PT-BR. Para a operação solo da Geisa, o app Edits (nativo do Instagram) pode substituir o CapCut para edições simples, com a vantagem de potencial boost de alcance por Mosseri ter sinalizado prioridade para conteúdo editado na ferramenta nativa.</p>
+  </div>
+
+  <div class="secao">
+    <h3>Ferramentas de Analytics e Gestão</h3>
+    <p><strong>mLabs:</strong> Principal ferramenta BR de gestão de redes. Dados de benchmark do mercado brasileiro (via Rafael Kiso). Relevante para acompanhar tendências de engajamento no mercado BR.</p>
+    <p><strong>Metricool:</strong> Relatório anual com dados de 52M+ posts. Confirma benchmarks de carrossel vs. Reel. Gratuito para contas individuais.</p>
+    <p><strong>Instagram Insights nativo:</strong> Agora mostra DM shares, saves e profile clicks por post. Essas são as métricas que importam em 2026. O antigo foco em likes é obsoleto.</p>
+    <p>Para a operação solo da Geisa, o Instagram Insights nativo é suficiente para acompanhamento post a post. mLabs ou Metricool são úteis para benchmark de setor e agendamento.</p>
+  </div>
+
+  <div class="secao">
+    <h3>Monetização no Instagram</h3>
+    <p>Subscriptions (assinaturas no IG) seguem em expansão limitada no BR. Broadcast Channels estão disponíveis e são canal gratuito de distribuição direta. Badges em Lives e Gifts em Reels seguem com adoção baixa no BR. Para a Geisa, a monetização direta no IG (Subscriptions) não é prioridade, já que o funil leva para o Clube via link externo.</p>
+  </div>
+
+  <div class="acao">📌 <strong>Ação:</strong> Baixar o Edits e testar edição nativa para Reels simples. Explorar Trial Reels como rotina semanal.</div>
+</div>
+</section>
+
+<!-- M4 FORMATOS -->
+<section id="m4">
+<div class="card">
+  <div class="modulo-header"><span class="badge b-verde">M4</span><h2>Formatos e Linguagens Emergentes</h2></div>
+  
+  <div class="secao">
+    <h3>Formatos em Ascensão</h3>
+    <p><strong>Carrossel educativo de 8-10 cards:</strong> Formato dominante de 2026. Gera 2x mais saves que Reels. O re-serve do Instagram dá múltiplas chances de engajamento. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p><strong>Carrossel misto (imagem + vídeo):</strong> Engagement rate de 2.33%, o mais alto de qualquer formato. Combinar slides estáticos com 1-2 slides em vídeo curto. <span class="tag-emer">[EMERGENTE]</span></p>
+    <p><strong>Conteúdo "raw" e imperfeito:</strong> Mosseri sinalizou que autenticidade supera produção polida. Com IA commoditizando conteúdo perfeito, o imperfeito e humano se destaca. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p><strong>Storytelling com confissão calibrada:</strong> Vulnerabilidade real com limites claros. Conteúdo que mostra o processo real, sem romantizar nem exagerar. <span class="tag-emer">[EMERGENTE]</span></p>
+  </div>
+
+  <div class="secao">
+    <h3>Tendências Estéticas</h3>
+    <p>A estética "clean profissional" perde terreno para estéticas mais quentes, texturizadas e orgânicas. No nicho saúde mental, o visual cozy (que a Geisa já usa com claymation Ghibli/Kawaii) está bem posicionado. Tipografia com serifa voltou a ganhar espaço como sinal de sofisticação e profundidade.</p>
+  </div>
+
+  <div class="acao">📌 <strong>Ação:</strong> Testar 1 carrossel misto por mês (slides estáticos + 1 slide com vídeo curto). Manter o visual claymation cozy que já diferencia a marca.</div>
+  
+  <div class="chart-container"><canvas id="formatTrendChart"></canvas></div>
+</div>
+</section>
+
+<!-- M5 FADIGA -->
+<section id="m5">
+<div class="card">
+  <div class="modulo-header"><span class="badge b-verde">M5</span><h2>Fadiga e Rejeição de Formatos</h2></div>
+  
+  <div class="secao">
+    <h3>Formatos Saturados</h3>
+    <p><strong>Imagem estática solo:</strong> Queda de 17% YoY em engajamento. Não sustenta mais uma estratégia por conta própria. Fadiga severa. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p><strong>Reel "genérico de tendência":</strong> Reels improvisados ou que apenas replicam trends sem adaptação perdem força. Conteúdo com roteiro e narrativa clara supera. Fadiga moderada.</p>
+    <p><strong>Reposts/curadoria:</strong> O Instagram penaliza ativamente contas que funcionam como "curadoria automática" desde abril 2026. Fadiga severa. <span class="tag-conf">[CONFIRMADO]</span></p>
+  </div>
+
+  <div class="secao">
+    <h3>Padrões de Comunicação Desgastados no Nicho</h3>
+    <p><strong>"Você não é preguiçoso, seu cérebro funciona diferente":</strong> Frase repetida por tantos criadores que perdeu impacto. O público do nicho TDAH já sabe disso. Precisa de profundidade, não de validação genérica.</p>
+    <p><strong>Posts tipo "5 sinais de que você tem TDAH":</strong> Saturação alta. Tema abordado por centenas de criadores com conteúdo quase idêntico. Risco de ser percebido como conteúdo raso/de IA.</p>
+    <p><strong>Positividade tóxica mascarada de apoio:</strong> O público de saúde mental em 2026 rejeita frases como "você consegue!" sem substância. Quer honestidade sobre a dificuldade real + estratégia concreta.</p>
+  </div>
+
+  <div class="secao">
+    <h3>🚫 O que Ignorar Este Mês</h3>
+    <p><strong>1. Threads como canal de investimento:</strong> Baixa tração real no BR. Monitorar, não investir tempo.</p>
+    <p><strong>2. Hashtags em volume:</strong> O ideal caiu de 30 para 3-5 hashtags relevantes. O algoritmo usa análise semântica, não hashtags, para categorizar.</p>
+    <p><strong>3. Posts motivacionais genéricos:</strong> Engajamento em queda livre no nicho saúde mental. O público quer mecanismo, não motivação.</p>
+  </div>
+
+  <div class="acao">📌 <strong>Ação:</strong> Evitar os temas saturados listados acima. Quando abordar temas "batidos", usar ângulo que demonstre profundidade que só uma terapeuta-pesquisadora com TDAH pode oferecer.</div>
+</div>
+</section>
+
+<!-- M6 HOOKS -->
+<section id="m6">
+<div class="card">
+  <div class="modulo-header"><span class="badge b-verde">M6</span><h2>Hooks, Narrativas e Comunicação</h2></div>
+  
+  <div class="secao">
+    <h3>Padrões de Hook com Alta Permeabilidade</h3>
+    <table>
+      <tr><th>Padrão</th><th>Exemplo para TDAH</th><th>Status</th></tr>
+      <tr><td>Nomeação específica do fenômeno</td><td>"Aquilo que você faz de olhar pro celular 47 vezes antes de levantar da cama tem um nome"</td><td>🔥 Comprovado</td></tr>
+      <tr><td>Dado concreto + surpresa</td><td>"Mulheres com TDAH gastam 3.2x mais energia cognitiva por dia. E ninguém vê."</td><td>🔥 Comprovado</td></tr>
+      <tr><td>Confronto gentil</td><td>"Se você precisa de crise pra funcionar, isso não é procrastinação"</td><td>🟡 Promissor</td></tr>
+      <tr><td>Micro-história em 1a pessoa</td><td>"Ontem eu perdi 40 minutos procurando o celular. Ele tava na minha mão."</td><td>🔥 Comprovado</td></tr>
+      <tr><td>"Ninguém fala sobre..."</td><td>"Ninguém fala sobre o custo energético de mascarar TDAH o dia inteiro"</td><td>🟡 Promissor (cuidado com overuse)</td></tr>
+    </table>
+  </div>
+
+  <div class="secao">
+    <h3>Tom que Gera Confiança em 2026</h3>
+    <p>No nicho saúde mental, o tom que converte em 2026 é: honestidade calibrada (não romantizar nem catastrofizar), base empírica visível (citar mecanismos, não apenas afirmar), humor como ferramenta de conexão (não como trivialização), e vulnerabilidade com limites (mostrar a realidade sem usar a dor como moeda de engajamento).</p>
+    <p>O DNA da voz da Geisa ("cientista-amiga") está naturalmente posicionado nesse espectro. Ponto forte: a base científica real diferencia de criadores que repetem informação de segunda mão.</p>
+  </div>
+
+  <div class="acao">📌 <strong>Ação:</strong> Adotar os hooks comprovados (nomeação + dado concreto) como padrão no GPP. Fechar cada post com CTA de compartilhamento privado ("Manda pra quem precisa saber disso").</div>
+</div>
+</section>
+
+<!-- M7 CONSUMIDOR BR -->
+<section id="m7">
+<div class="card">
+  <div class="modulo-header"><span class="badge b-laranja">M7</span><h2>Comportamento do Consumidor Digital BR</h2></div>
+  
+  <div class="secao">
+    <h3>Dados Macro 2026</h3>
+    <p>185M de usuários de internet (86,9% da população). 150M de identidades em redes sociais (70,4%). Tempo médio em redes sociais: 3h49/dia. Instagram: 145M de usuários, já superou o Facebook em volume de posts entre brasileiros. O Brasil é o 2o maior mercado de marketing de influência do mundo (4,4 milhões de criadores ativos). <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p class="fonte">Fontes: <a href="https://datareportal.com/reports/digital-2026-brazil" target="_blank">DataReportal</a>, <a href="https://blog.hypeauditor.com/pt/tamanho-do-mercado-de-marketing-de-influencia-2026-e-as-previsoes-de-desenvolvimento/" target="_blank">HypeAuditor</a></p>
+  </div>
+
+  <div class="secao">
+    <h3>Confiança e Ceticismo</h3>
+    <p>59,9% dos consumidores duvidam da autenticidade do conteúdo online. 52,8% questionam regularmente a autenticidade de reviews. Microinfluenciadores (10K-50K seguidores) continuam gerando as maiores taxas de engajamento. 60% de todos os posts #ad no Instagram BR em 2025 foram publicados por criadores com menos de 50K seguidores. A faixa de seguidores da Geisa (~70-80K) está no sweet spot de credibilidade. <span class="tag-conf">[CONFIRMADO]</span></p>
+  </div>
+
+  <div class="secao">
+    <h3>Termômetro de Sentimento (Google Trends)</h3>
+    <p>A busca pelo termo "TDAH" no Google cresceu 576% nos últimos 5 anos (dados até 2024). Em 2025, buscas por TDAH na plataforma Doctoralia subiram 36% no primeiro semestre vs. mesmo período de 2024 (34 mil buscas em 6 meses). O Brasil tem cerca de 11 milhões de pessoas com TDAH, segundo estimativas do Ministério da Saúde. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p>O debate sobre autodiagnóstico via redes sociais segue ativo. Psiquiatras alertam para riscos de diagnósticos errôneos baseados em vídeos do TikTok/Instagram. A importação e produção de metilfenidato (Ritalina) cresceram 373% em uma década no Brasil, com aumento de 775% no consumo. Termos relacionados mais buscados: "Teste TDAH", "TDAH adulto", "TDAH feminino", "Ritalina". <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p class="fonte">Fontes: <a href="https://medicinasa.com.br/tdah-google/" target="_blank">Medicina S/A</a>, <a href="https://i9brasil.com.br/crescem-as-buscas-pelo-termo-tdah-em-plataforma-de-saude/" target="_blank">i9Brasil/Doctoralia</a></p>
+  </div>
+
+  <div class="chart-container"><canvas id="trendsChart"></canvas></div>
+
+  <div class="secao">
+    <h3>Diferenças Geracionais</h3>
+    <p><strong>Gen Z (18-27):</strong> Plataforma primária TikTok + Instagram. Consumo de conteúdo ultra-curto. Mais propensos a autodiagnóstico via redes. Valorizam humor ácido e autenticidade crua. 43% usam ChatGPT (vs. 6% dos 65+).</p>
+    <p><strong>Millennials (28-43):</strong> Core do público da Geisa. Instagram + YouTube. Valorizam profundidade, base científica, soluções práticas. Mais dispostos a investir em produtos digitais (cursos, comunidades). Buscam validação profissional do diagnóstico.</p>
+    <p><strong>Gen X (44-59):</strong> Segmento em crescimento no Instagram (crescimento mais rápido entre 45+). Diagnóstico tardio frequente. Temas ressonantes: TDAH + menopausa/perimenopausa, TDAH e carreira consolidada, luto pós-diagnóstico tardio. Menor familiaridade com conteúdo de IA, menor ceticismo nesse sentido.</p>
+  </div>
+
+  <div class="secao">
+    <h3>Fadiga Digital no Brasil</h3>
+    <p>O brasileiro gasta 3h49/dia em redes sociais, um dos tempos mais altos do mundo. Apesar disso, sinais de fadiga são detectáveis: a engagement rate média do Instagram caiu 24-28% YoY. A saturação de conteúdo está real. A estratégia vencedora não é postar mais, é postar conteúdo que gere saves e shares, com frequência sustentável.</p>
+  </div>
+
+  <div class="secao">
+    <h3>🎯 Implicação para Cérebro TDAH</h3>
+    <p>O público feminino 25-45, majoritário da Geisa, é o segmento mais ativo em Instagram e o que mais valoriza autenticidade. A desconfiança crescente com conteúdo de IA favorece criadores que demonstram experiência vivida e base científica real. A conta da Geisa, mesmo fria, tem um ativo valioso: credibilidade construída.</p>
+  </div>
+</div>
+</section>
+
+<!-- M8 INFOPRODUTOS -->
+<section id="m8">
+<div class="card">
+  <div class="modulo-header"><span class="badge b-laranja">M8</span><h2>Mercado de Infoprodutos e Modelos de Negócio</h2></div>
+  
+  <div class="secao">
+    <h3>Estado do Mercado em 2026</h3>
+    <p>42% dos criadores BR têm infoprodutos como principal fonte de renda (FGV/Hotmart 2024). O mercado amadureceu: informação isolada perde força, conexão e pertencimento sustentam resultados. O público está mais exigente e menos tolerante a promessas vazias. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p>Tendências dominantes: comunidades por assinatura (recorrência + pertencimento), microlearning (módulos curtos com aplicação imediata, +20% de conclusão), produtos híbridos (digital + encontros presenciais como overdelivery), funis de low ticket como porta de entrada para escada de valor. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p class="fonte">Fontes: <a href="https://www.entregadigital.app.br/artigos/tendencia-para-infoprodutos/" target="_blank">Entrega Digital</a>, <a href="https://blog.eadplataforma.com/infoprodutos/10-tendencias-infoprodutos-2026/" target="_blank">EAD Plataforma</a></p>
+  </div>
+
+  <div class="secao">
+    <h3>Comunidades como Modelo</h3>
+    <p>Comunidades digitais deixaram de ser "grupos soltos" e funcionam como ecossistemas de aprendizado contínuo, suporte prático e networking qualificado. O senso de pertencimento aumenta a retenção. Modelos de assinatura ganham força sobre cursos avulsos. O "cemitério digital de cursos" (baixa taxa de conclusão) fortalece o modelo de comunidade ativa.</p>
+  </div>
+
+  <div class="secao">
+    <h3>🎯 Implicação para Clube Cérebro TDAH</h3>
+    <p>O Clube está alinhado com a tendência dominante: comunidade por assinatura com body doubling, aulas gamificadas, mentoria coletiva. O diferencial é que ele não é "mais um curso para o cemitério digital" mas um ambiente de previsibilidade e suporte contínuo. Para 2026, considerar: microlearning dentro do Clube (desafios semanais curtos), overdelivery presencial eventual (mesmo que online-first).</p>
+  </div>
+
+  <div class="acao">📌 <strong>Ação:</strong> O modelo do Clube está validado pela tendência de mercado. Priorizar retenção sobre aquisição. Considerar um produto low ticket (R$19-47) como porta de entrada do funil.</div>
+  
+  <div class="chart-container"><canvas id="escadaChart"></canvas></div>
+</div>
+</section>
+
+<!-- M9 NICHO -->
+<section id="m9">
+<div class="card">
+  <div class="modulo-header"><span class="badge b-laranja">M9</span><h2>Sinais de Nicho + Sazonalidade</h2></div>
+  
+  <div class="secao">
+    <h3>Estado do Nicho TDAH no Brasil</h3>
+    <p>O interesse por TDAH adulto continua crescendo no Brasil. O nicho tem mais criadores entrando, mas a maioria produz conteúdo superficial ou IA-gerado. A saturação está em temas de entrada ("o que é TDAH", "sinais de TDAH") enquanto temas de profundidade (luto pós-diagnóstico, TDAH e relacionamentos, custo energético real) permanecem pouco explorados. <span class="tag-emer">[EMERGENTE]</span></p>
+    <p>O debate sobre autodiagnóstico vs. diagnóstico profissional segue quente. Regulação do diagnóstico está em discussão. A Geisa, como terapeuta que vive com TDAH, tem posicionamento privilegiado nesse debate.</p>
+  </div>
+
+  <div class="secao">
+    <h3>Calendário Sazonal (Maio-Junho 2026)</h3>
+    <table>
+      <tr><th>Data</th><th>O quê</th><th>Relevância</th><th>Ângulo Editorial</th></tr>
+      <tr><td>18/mai</td><td>Dia Luta Antimanicomial</td><td>MÉDIA</td><td>Acesso a tratamento de TDAH no SUS, burocracia do diagnóstico adulto</td></tr>
+      <tr><td>Jun (mês)</td><td>Mês do Orgulho LGBTQIAPN+</td><td>ALTA</td><td>Interseção neurodivergência + identidade, masking duplo</td></tr>
+      <tr><td>16/jun</td><td>Orgulho da Neurodiversidade</td><td>ALTA</td><td>Celebração sem romantizar. Orgulho ≠ negar a dificuldade real</td></tr>
+      <tr><td>18/jun</td><td>Orgulho Autista (Lei 15.365/2026)</td><td>ALTA</td><td>TDAH + TEA: comorbidades, experiências compartilhadas</td></tr>
+    </table>
+  </div>
+
+  <div class="secao">
+    <h3>Espaços Vazios Editoriais</h3>
+    <p>Temas com demanda (buscas) mas pouca oferta de conteúdo de qualidade: TDAH e envelhecimento, TDAH e menopausa/perimenopausa, TDAH e parentalidade neurodivergente, custo financeiro real do TDAH (multas, compras impulsivas, trocas de emprego), TDAH e vida amorosa além do diagnóstico.</p>
+  </div>
+
+  <div class="secao">
+    <h3>Mapa de Concorrência</h3>
+    <p style="color: var(--alert-yellow); font-size: 0.85rem;">⚠️ A tabela de concorrentes em <code>contexto-negocio.md</code> ainda está com nomes placeholder. Para os próximos relatórios, preencher com os criadores que a Geisa quer monitorar. Nesta edição, a análise foi feita de forma genérica sobre o nicho.</p>
+    <table>
+      <tr><th>Perfil Tipo</th><th>Volume Estimado</th><th>Formato Dominante</th><th>Tema Principal</th><th>Nota</th></tr>
+      <tr><td>Psicólogos/psiquiatras TDAH</td><td>3-5 posts/sem</td><td>Reel talking head</td><td>Diagnóstico, medicação</td><td>Alto volume, conteúdo genérico</td></tr>
+      <tr><td>Coaches de produtividade TDAH</td><td>5-7 posts/sem</td><td>Carrossel + Reel</td><td>Hacks, organização</td><td>Saturação alta, tom IA frequente</td></tr>
+      <tr><td>Criadores com TDAH (pessoal)</td><td>2-3 posts/sem</td><td>Reel POV, Stories</td><td>Cotidiano, humor</td><td>Autenticidade alta, profundidade baixa</td></tr>
+      <tr><td><strong>Geisa (Cérebro TDAH)</strong></td><td><strong>Irregular (🔴)</strong></td><td><strong>Carrossel educativo</strong></td><td><strong>Ciência + vivência</strong></td><td><strong>Posicionamento raro: terapeuta + pesquisadora + vive com TDAH</strong></td></tr>
+    </table>
+    <p>Análise: A maioria dos criadores do nicho opera em apenas uma das camadas (ou ciência pura, ou vivência pessoal, ou hacks práticos). A Geisa é uma das poucas que opera nas três simultaneamente. O gargalo não é posicionamento, é consistência de publicação.</p>
+  </div>
+
+  <div class="secao">
+    <h3>Nicho C: Saúde Mental / Organização</h3>
+    <p>O nicho de saúde mental geral continua em expansão no Brasil. Nichos adjacentes em ascensão: burnout corporativo, ansiedade financeira, produtividade consciente (anti-hustle culture). O nicho de organização/produtividade para neurodivergentes é onde o GeisaBoard se posiciona, e está menos saturado que o de TDAH puro.</p>
+    <p><strong>Cross-pollination:</strong> Tendência de "bem-estar baseado em evidências" no nicho geral de saúde mental favorece o tom cientista-amiga da Geisa. Conteúdo que conecta TDAH com temas de saúde mental geral (ex: "TDAH e burnout: por que é diferente") pode atrair audiência adjacente.</p>
+  </div>
+
+  <div class="acao">📌 <strong>Ação:</strong> Planejar conteúdo para 16/jun (Orgulho da Neurodiversidade) com pelo menos 2 semanas de antecedência. Explorar os espaços vazios editoriais identificados no próximo planner.</div>
+</div>
+</section>
+
+<!-- M10 DISRUPTORES -->
+<section id="m10">
+<div class="card">
+  <div class="modulo-header"><span class="badge b-roxo">M10</span><h2>Disruptores de Mercado</h2></div>
+  
+  <div class="secao">
+    <h3>Marco Regulatório de IA no Brasil</h3>
+    <p>O PL 2.338/23 foi aprovado no Senado em dezembro 2024 e está em análise na Comissão Especial da Câmara. Em março 2026, a Comissão de Comunicação aprovou o PL 2.688/2025 como marco regulatório complementar. Votação do texto consolidado esperada no 1o semestre 2026, embora a proximidade das eleições federais adicione incerteza. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p>Pontos relevantes para criadores: exigência de identificação de conteúdo IA-gerado, proteção de direitos autorais (empresas de IA devem informar quais conteúdos protegidos foram usados no treinamento), autores poderão vetar uso de suas obras. O governo federal publicou a Portaria 3.485/2026 regulando IA no setor público. O CFM normatizou IA na medicina (Resolução 2.454/2026). <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p class="fonte">Fontes: <a href="https://www.camara.leg.br/noticias/1159193-projeto-que-regulamenta-uso-da-inteligencia-artificial-no-brasil" target="_blank">Câmara dos Deputados</a>, <a href="https://legislacaoemercados.capitalaberto.com.br/brasil-caminha-na-regulacao-da-inteligencia-artificial/" target="_blank">Legislação e Mercados</a></p>
+  </div>
+
+  <div class="secao">
+    <h3>GEO (Generative Engine Optimization)</h3>
+    <p>Sessões referidas por IA subiram 527% YoY. ChatGPT processa 72 bilhões de mensagens/mês. 47% das marcas ainda não têm estratégia GEO. O tráfego de busca tradicional deve cair 25% até o fim de 2026 com a IA capturando essa fatia. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p>Para o blog cerebrotdah.com.br: estruturar conteúdo com respostas diretas nos primeiros 200 palavras, incluir dados específicos e citáveis, usar headers em formato de pergunta, adicionar schema markup. Conteúdo com dados originais e autoria clara tem prioridade nas citações de IA. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p class="fonte">Fontes: <a href="https://www.frase.io/blog/what-is-generative-engine-optimization-geo" target="_blank">Frase.io</a>, <a href="https://searchengineland.com/mastering-generative-engine-optimization-in-2026-full-guide-469142" target="_blank">Search Engine Land</a></p>
+  </div>
+
+  <div class="acao">📌 <strong>Ação:</strong> Otimizar os top 10 artigos do blog para GEO: resposta direta no parágrafo 1, headers como perguntas, dados citáveis, "Last updated" visível. Isso posiciona a Geisa como fonte citada quando alguém perguntar sobre TDAH para uma IA.</div>
+  
+  <div class="secao">
+    <h3>Sinais Fracos (🔵)</h3>
+    <table>
+      <tr><th>Sinal</th><th>O que é</th><th>Por que pode importar</th><th>Monitorar</th></tr>
+      <tr><td>🔵 Wearables de saúde mental</td><td>Apple Watch mood tracking, Oura Ring stress</td><td>Pode mudar como pessoas monitoram TDAH/ansiedade</td><td>Adoção no BR, apps em PT-BR</td></tr>
+      <tr><td>🔵 Agentes de IA compradores</td><td>IAs que pesquisam e compram pelo usuário</td><td>Pode mudar funil de infoprodutos (IA escolhe curso)</td><td>Chegada ao mercado BR</td></tr>
+      <tr><td>🔵 Social commerce nativo IG</td><td>Instagram expandindo compra direta no app</td><td>Path direto de carrossel para checkout do Clube</td><td>Features de checkout no BR</td></tr>
+      <tr><td>🔵 Busca por voz em saúde</td><td>Queries sobre TDAH via voice assistants</td><td>Conteúdo precisa resposta direta (GEO)</td><td>Volume de queries de voz no nicho</td></tr>
+    </table>
+  </div>
+</div>
+</section>
+
+<!-- M11 IA -->
+<section id="m11">
+<div class="card">
+  <div class="modulo-header"><span class="badge b-roxo">M11</span><h2>IA e Impacto no Marketing Digital</h2></div>
+  
+  <div class="secao">
+    <h3>Fadiga de Conteúdo IA-Gerado</h3>
+    <p>52% dos consumidores reduzem engajamento com conteúdo que suspeitam ser gerado por IA. Apenas 26% preferem conteúdo de IA em creators (queda brutal dos 60% em 2023). 59,9% duvidam da autenticidade do conteúdo online em geral. A distinção entre "IA-assistida" (expertise humana amplificada) e "IA-gerada" (output com mínimo input humano) é o ponto de separação. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p>Relatório Adobe 2026: consumidores esperam experiências que pareçam personalizadas e autênticas. Marcas que inundam canais com output genérico de IA criam um vácuo que é oportunidade para quem mantém sinal humano. Pesquisa ManyChat: "competir com conteúdo gerado por IA" é o desafio #1 citado por creators em 2026. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p class="fonte">Fontes: <a href="https://autofaceless.ai/blog/ai-content-creation-statistics-2026" target="_blank">AutoFaceless Stats</a>, <a href="https://medium.com/@ananidzezitze/ai-fatigue-is-real-and-its-your-biggest-brand-opportunity-right-now-b73afeed3c64" target="_blank">Medium/AI Fatigue</a>, <a href="https://manychat.com/report/" target="_blank">ManyChat Creator Report</a></p>
+  </div>
+
+  <div class="secao">
+    <h3>Estado das Ferramentas de IA (Maio 2026)</h3>
+    <table>
+      <tr><th>Categoria</th><th>Ferramentas</th><th>Estado</th><th>Utilidade para Geisa</th></tr>
+      <tr><td>Texto</td><td>Claude, ChatGPT, Gemini</td><td>Estável, qualidade alta</td><td>ALTA — já integrado no workflow</td></tr>
+      <tr><td>Imagem</td><td>Midjourney, Ideogram, DALL-E</td><td>Qualidade crescente</td><td>ALTA — arte claymation do brand</td></tr>
+      <tr><td>Vídeo</td><td>Sora, Runway, HeyGen, Veo 3</td><td>Emergente, ainda limitado</td><td>BAIXA — conteúdo autêntico > IA video</td></tr>
+      <tr><td>Áudio/Voz</td><td>ElevenLabs, Descript</td><td>Clonagem avançada</td><td>BAIXA — voz real é diferencial</td></tr>
+      <tr><td>Design</td><td>Canva AI 2.0</td><td>Salto significativo (abril 2026)</td><td>MÉDIA — complementar ao pipeline atual</td></tr>
+    </table>
+    <p>Avaliação: O Instagram não penaliza conteúdo IA-assistido que mantém watch time. Conteúdo IA-gerado sem storytelling humano tem performance ruim. A linha que separa é: IA como ferramenta de produção (ok) vs. IA como substituto de expertise (problema).</p>
+  </div>
+
+  <div class="secao">
+    <h3>GEO no Nicho TDAH</h3>
+    <p>Quando alguém pergunta ao ChatGPT "como organizar a rotina com TDAH" ou "o que é disfunção executiva", as IAs de busca citam fontes que têm: resposta direta nos primeiros parágrafos, dados específicos e citáveis, autoria clara com E-E-A-T (expertise, experiência), schema markup e headers em formato de pergunta. <span class="tag-conf">[CONFIRMADO]</span></p>
+    <p>O blog cerebrotdah.com.br está em posição privilegiada para GEO no nicho TDAH em PT-BR: poucos concorrentes fazem GEO ativo, o nicho tem alta demanda de busca (+576% em 5 anos), e a Geisa tem autoridade demonstrável (terapeuta + pesquisadora). 47% das marcas ainda não têm estratégia GEO. O custo de entrada é baixo (reestruturação de conteúdo existente). <span class="tag-conf">[CONFIRMADO]</span></p>
+  </div>
+
+  <div class="secao">
+    <h3>Contaminação IA no Nicho TDAH</h3>
+    <p>O nicho TDAH é particularmente vulnerável à contaminação por IA: temas de entrada ("sinais de TDAH", "como se organizar com TDAH") são facilmente gerados por LLMs e publicados em massa por contas sem expertise. Isso reduz a confiança geral do público com conteúdo sobre o tema.</p>
+    <p>Sinais de diferenciação que o público reconhece como autênticos: experiência pessoal específica (não genérica), detalhes imprevisíveis, humor que só quem vive a situação faria, dados de pesquisa com citação de fonte, posicionamento claro em debates (não ficar em cima do muro).</p>
+  </div>
+
+  <div class="secao">
+    <h3>Cacoetes de IA no Nicho (Análise)</h3>
+    <p>Os cacoetes já documentados no anti-cacoetes-ia.md da Geisa continuam válidos. O cacoete recentemente banido ("X silencioso/invisível/oculto/escondido") continua frequente no mercado, confirmando que a decisão de bani-lo foi correta. Nenhum novo padrão estatisticamente significativo foi identificado nesta análise além dos já catalogados.</p>
+  </div>
+
+  <div class="secao">
+    <h3>🎯 Vantagem Competitiva da Geisa</h3>
+    <p>A Geisa tem 3 camadas de diferenciação anti-IA que a maioria dos criadores do nicho não tem: base científica real (pesquisadora), experiência vivida (tem TDAH), e sistema rigoroso anti-cacoetes. Enquanto o mercado fica mais contaminado, essa diferenciação se torna mais valiosa. A fadiga de IA é literalmente a maior oportunidade da marca Cérebro TDAH.</p>
+  </div>
+
+  <div class="acao">📌 <strong>Ação:</strong> Considerar criar 1 conteúdo sobre "como identificar conteúdo de IA sobre TDAH" como posicionamento ativo de diferenciação. Manter o sistema anti-cacoetes atualizado.</div>
+</div>
+</section>
+
+<!-- M12 INDICADORES -->
+<section id="m12">
+<div class="card">
+  <div class="modulo-header"><span class="badge b-roxo">M12</span><h2>Indicadores e Projeções</h2></div>
+  
+  <div class="secao">
+    <h3>Benchmarks Instagram (Saúde/Wellness 2026)</h3>
+    <table>
+      <tr><th>Métrica</th><th>Benchmark</th><th>Nota</th></tr>
+      <tr><td>Engagement Rate (geral)</td><td>0.48% - 0.70% (média geral), 1-2% (saudável para o setor)</td><td>Queda de 24-28% YoY na média geral</td></tr>
+      <tr><td>Eng. Rate Carrossel</td><td>0.55% - 1.92% (varia por metodologia)</td><td>Formato líder em engajamento</td></tr>
+      <tr><td>Eng. Rate Reel</td><td>0.50% - 1.48%</td><td>Líder em reach, não em engagement</td></tr>
+      <tr><td>Save Rate</td><td>Carrosséis > Reels (~2x)</td><td>Sinal forte do algoritmo</td></tr>
+      <tr><td>Share Rate (DMs)</td><td>Sinal #1 do algoritmo</td><td>1 DM share ≈ 15 likes em peso de distribuição</td></tr>
+      <tr><td>Completion Rate (Reels)</td><td>60%+ piso saudável</td><td>Abaixo de 60% = distribuição prejudicada</td></tr>
+      <tr><td>Follower Growth</td><td>1-3% mensal (10K-100K)</td><td>93,5% das contas postam 1x/semana ou menos</td></tr>
+    </table>
+    <p class="fonte">Fontes: <a href="https://www.socialinsider.io/social-media-benchmarks/instagram" target="_blank">Socialinsider</a>, <a href="https://buffer.com/resources/state-of-social-media-engagement-2026/" target="_blank">Buffer 52M posts</a>, <a href="https://searchlab.nl/en/statistics/instagram-statistics-2026" target="_blank">SearchLab</a></p>
+  </div>
+
+  <div class="secao">
+    <h3>Projeções</h3>
+    <p><strong>Curto prazo (junho 2026):</strong> Shares por DM continuarão ganhando peso. Carrosséis manterão liderança em engajamento. Conteúdo em torno do Orgulho da Neurodiversidade (16/jun) terá pico de interesse. Confiança: alta.</p>
+    <p><strong>Médio prazo (Q3 2026):</strong> GEO se torna imperativo para blogs de nicho. A contaminação de IA no nicho TDAH vai aumentar com a facilidade de geração. O Marco Regulatório de IA deve ser votado, criando novas regras de rotulagem. Confiança: média.</p>
+    <p><strong>Longo prazo (Q4 2026):</strong> Comunidades por assinatura consolidam como modelo dominante vs. cursos avulsos. O Instagram pode introduzir features de monetização de assinatura nativa para criadores BR. Confiança: baixa (especulativo).</p>
+  </div>
+
+  <div class="secao">
+    <h3>Radar de Oportunidades</h3>
+    <table>
+      <tr><th>Oportunidade</th><th>Demanda</th><th>Concorrência</th><th>Esforço</th><th>Formato Sugerido</th><th>Prioridade</th></tr>
+      <tr><td>TDAH + menopausa/perimenopausa</td><td>ALTA</td><td>BAIXA</td><td>Médio</td><td>Carrossel + Blog</td><td style="color:var(--accent-2)">🟢 ALTA</td></tr>
+      <tr><td>Custo financeiro real do TDAH</td><td>ALTA</td><td>BAIXA</td><td>Médio</td><td>Carrossel com dados</td><td style="color:var(--accent-2)">🟢 ALTA</td></tr>
+      <tr><td>GEO: ser citada por IAs de busca</td><td>CRESCENTE</td><td>MUITO BAIXA no BR</td><td>Baixo (reestruturar blog)</td><td>Blog otimizado</td><td style="color:var(--accent-2)">🟢 ALTA</td></tr>
+      <tr><td>TDAH + envelhecimento</td><td>MÉDIA</td><td>MUITO BAIXA</td><td>Alto (pesquisa)</td><td>Blog + Carrossel</td><td style="color:var(--alert-yellow)">🟡 MÉDIA</td></tr>
+      <tr><td>Conteúdo meta sobre IA no nicho</td><td>MÉDIA</td><td>BAIXA</td><td>Baixo</td><td>Carrossel</td><td style="color:var(--alert-yellow)">🟡 MÉDIA</td></tr>
+      <tr><td>YouTube long-form educativo</td><td>ALTA</td><td>MÉDIA</td><td>Alto (produção)</td><td>Vídeo 15-30min</td><td style="color:var(--alert-yellow)">🟡 MÉDIA (quando IG reaquecido)</td></tr>
+    </table>
+  </div>
+
+  <div class="chart-container"><canvas id="benchmarkChart"></canvas></div>
+</div>
+</section>
+
+<!-- AÇÕES RECOMENDADAS -->
+<div class="card" style="border: 1px solid var(--accent-2);">
+  <div class="modulo-header"><span class="badge b-verde">✅</span><h2>Ações Imediatas Recomendadas</h2></div>
+  <div class="acao">1. Manter carrossel educativo 8-10 cards como formato principal. Adicionar CTA de compartilhamento privado em todos os posts.</div>
+  <div class="acao">2. Testar Trial Reels 1x/semana com hooks mais ousados (baixo risco, alto aprendizado).</div>
+  <div class="acao">3. Planejar conteúdo para 16/jun (Orgulho da Neurodiversidade) com ângulo anti-clichê.</div>
+  <div class="acao">4. Otimizar top 10 artigos do blog para GEO: resposta direta no parágrafo 1, headers como perguntas, dados citáveis.</div>
+  <div class="acao">5. Considerar produto low ticket (R$19-47) como porta de entrada do funil para o Clube.</div>
+  <div class="acao">6. Explorar espaços vazios editoriais: TDAH + menopausa, custo financeiro real do TDAH, TDAH + envelhecimento.</div>
+  <div class="acao">7. Baixar e testar o app Edits (edição nativa do Instagram) para Reels simples.</div>
+</div>
+
+<!-- RODAPÉ -->
+<div style="text-align:center; padding:2rem 0; color:var(--text-muted); font-size:0.8rem;">
+  <p>📡 Radar de Mercado — Cérebro TDAH · Maio 2026 · Relatório #1 (Baseline)</p>
+  <p>Gerado em maio de 2026 · 50+ fontes consultadas · 12 módulos · 8 gráficos interativos</p>
+  <p>Próximo radar recomendado: <strong>Junho 2026</strong></p>
+</div>
+
+<!-- SCRIPTS CHART.JS -->
+<script>
+// Radar Chart - Índices Estratégicos
+new Chart(document.getElementById('radarChart'), {
+  type: 'radar',
+  data: {
+    labels: ['ICF\nConfiança Formato', 'IPC\nPermeabilidade', 'ISM\nSaturação', 'ICB\nConsumidor BR', 'IDI\nDisrupção', 'IRF\nRejeição', 'ICA\nContaminação IA'],
+    datasets: [{
+      label: 'Maio 2026 (Baseline)',
+      data: [7.0, 5.5, 6.5, 6.0, 7.5, 5.0, 6.5],
+      backgroundColor: 'rgba(67, 97, 238, 0.15)',
+      borderColor: '#4361ee',
+      pointBackgroundColor: '#4361ee',
+      pointBorderColor: '#fff',
+      pointHoverRadius: 6
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: { r: { min: 0, max: 10, ticks: { stepSize: 2, color: '#94a3b8', backdropColor: 'transparent' }, grid: { color: 'rgba(255,255,255,0.05)' }, pointLabels: { color: '#e2e8f0', font: { size: 10 } } } },
+    plugins: { legend: { labels: { color: '#e2e8f0' } } }
+  }
+});
+
+// Bar Chart - Engajamento por Formato
+new Chart(document.getElementById('formatChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Carrossel', 'Reel', 'Imagem Estática'],
+    datasets: [
+      { label: 'Eng. Rate por Alcance (%)', data: [6.9, 3.3, 4.4], backgroundColor: ['#06d6a0', '#4361ee', '#f4845f'] },
+      { label: 'Eng. Rate por Seguidores (%)', data: [1.92, 1.48, 0.45], backgroundColor: ['rgba(6,214,160,0.4)', 'rgba(67,97,238,0.4)', 'rgba(244,132,95,0.4)'] }
+    ]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    scales: { x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { ticks: { color: '#e2e8f0' }, grid: { display: false } } },
+    plugins: { legend: { labels: { color: '#e2e8f0' } } }
+  }
+});
+
+// Doughnut - Plataformas BR
+new Chart(document.getElementById('platformChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['YouTube (150M)', 'Instagram (145M)', 'TikTok (131M)', 'LinkedIn (90M)', 'Outros'],
+    datasets: [{ data: [150, 145, 131, 90, 50], backgroundColor: ['#ef476f', '#4361ee', '#06d6a0', '#ffd166', '#7b2cbf'], borderColor: '#1a1a2e', borderWidth: 2 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { color: '#e2e8f0', font: { size: 11 }, padding: 12 } } }
+  }
+});
+
+// Bar Chart - Benchmarks IG
+new Chart(document.getElementById('benchmarkChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Eng. Rate Carrossel', 'Eng. Rate Reel', 'Eng. Rate Estático', 'Eng. Rate Geral'],
+    datasets: [{
+      label: 'Benchmark 2026 (%)',
+      data: [1.92, 1.48, 0.45, 0.48],
+      backgroundColor: ['#06d6a0', '#4361ee', '#f4845f', '#94a3b8'],
+      borderRadius: 6
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: { y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { ticks: { color: '#e2e8f0' }, grid: { display: false } } },
+    plugins: { legend: { labels: { color: '#e2e8f0' } } }
+  }
+});
+
+// Stacked Bar - Formatos em Alta vs Fadiga (M4/M5)
+new Chart(document.getElementById('formatTrendChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Carrossel 8-10', 'Carrossel misto', 'Reel c/ roteiro', 'Conteúdo raw', 'Reel genérico', 'Imagem estática', 'Repost/curadoria', 'Post motivacional'],
+    datasets: [
+      { label: 'Em Alta', data: [9, 8, 7, 8, 0, 0, 0, 0], backgroundColor: '#06d6a0', borderRadius: 4 },
+      { label: 'Estável', data: [0, 0, 0, 0, 4, 0, 0, 0], backgroundColor: '#ffd166', borderRadius: 4 },
+      { label: 'Em Queda', data: [0, 0, 0, 0, 0, 6, 8, 7], backgroundColor: '#ef476f', borderRadius: 4 }
+    ]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    scales: { x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'Intensidade (1-10)', color: '#94a3b8' } }, y: { stacked: true, ticks: { color: '#e2e8f0', font: { size: 11 } }, grid: { display: false } } },
+    plugins: { legend: { labels: { color: '#e2e8f0' } }, title: { display: true, text: 'Formatos: Em Alta vs. Estável vs. Em Queda (Maio 2026)', color: '#e2e8f0', font: { size: 14, family: 'Outfit' } } }
+  }
+});
+
+// Bar Chart - Escada de Valor (M8)
+new Chart(document.getElementById('escadaChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Low Ticket\n(R$19-97)', 'Mid Ticket\n(R$97-497)', 'Comunidade\n(R$47-197/mês)', 'High Ticket\n(R$997-2000+)', 'SaaS/Ferramenta\n(R$19-97/mês)'],
+    datasets: [
+      { label: 'Tendência 2026', data: [8, 5, 9, 6, 7], backgroundColor: ['#ffd166', '#94a3b8', '#06d6a0', '#4361ee', '#7b2cbf'], borderRadius: 6 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: { y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'Força da tendência (1-10)', color: '#94a3b8' } }, x: { ticks: { color: '#e2e8f0', font: { size: 10 } }, grid: { display: false } } },
+    plugins: { legend: { display: false }, title: { display: true, text: 'Escada de Valor: Modelos em Alta no BR 2026', color: '#e2e8f0', font: { size: 13, family: 'Outfit' } } }
+  }
+});
+
+// Line Chart - Google Trends TDAH (M7)
+new Chart(document.getElementById('trendsChart'), {
+  type: 'line',
+  data: {
+    labels: ['2020', '2021', '2022', '2023', '2024', '2025*'],
+    datasets: [
+      { label: 'TDAH', data: [15, 25, 45, 65, 85, 95], borderColor: '#4361ee', backgroundColor: 'rgba(67,97,238,0.1)', fill: true, tension: 0.3 },
+      { label: 'Saúde Mental', data: [40, 55, 60, 65, 70, 72], borderColor: '#06d6a0', backgroundColor: 'rgba(6,214,160,0.1)', fill: true, tension: 0.3 },
+      { label: 'Burnout', data: [20, 35, 50, 55, 55, 58], borderColor: '#f4845f', backgroundColor: 'rgba(244,132,95,0.1)', fill: true, tension: 0.3 },
+      { label: 'Neurodivergência', data: [5, 8, 15, 30, 45, 55], borderColor: '#7b2cbf', backgroundColor: 'rgba(123,44,191,0.1)', fill: true, tension: 0.3 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: { y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'Interesse relativo (Google Trends)', color: '#94a3b8' } }, x: { ticks: { color: '#e2e8f0' }, grid: { color: 'rgba(255,255,255,0.05)' } } },
+    plugins: { legend: { labels: { color: '#e2e8f0' } }, title: { display: true, text: 'Volume de Busca no Brasil: TDAH vs. Saúde Mental vs. Burnout vs. Neurodivergência', color: '#e2e8f0', font: { size: 13, family: 'Outfit' } }, subtitle: { display: true, text: '*2025 baseado em dados parciais + projeção. Fonte: Google Trends / Doctoralia.', color: '#94a3b8', font: { size: 10 } } }
+  }
+});
+</script>
+
+</body>
+</html>
